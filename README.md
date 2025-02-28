@@ -1,6 +1,6 @@
 # plasmo-tailwindcss-shadcn-template
 
-A chrome extension template using 
+A chrome extension template using
 - [Plasmo](https://docs.plasmo.com/)
 - [Tailwind CSS](https://tailwindcss.com/)
 - [Shadcn/ui](https://ui.shadcn.com/)
@@ -32,7 +32,6 @@ This should create a production bundle for your extension, ready to be zipped an
 ## Feature
 
 plasmo + shadcn + tailwindcss
-
 
 ## Adding shadcn components
 

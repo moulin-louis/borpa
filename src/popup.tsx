@@ -1,11 +1,9 @@
-import "~main.css";
-
+import { Button } from '~components/ui/button'
+import '~main.css'
 
 function IndexPopup() {
   return (
-    <div className=''>
-      <h1>Hello World</h1>
-    </div>
+    <Button>Click here</Button>
   )
 }
 
