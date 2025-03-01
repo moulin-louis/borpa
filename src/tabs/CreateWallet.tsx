@@ -25,7 +25,7 @@ const { useStepper, Scoped } = defineStepper(
     id: "last",
     title: "Wallet Created",
     description: "Your wallet has been created successfully.",
-  },
+  }
 );
 
 function CardStep({ title, description }: { title: string; description: string; children: ReactNode }) {
@@ -74,7 +74,7 @@ export function CreateWallet() {
             {stepper.when(
               "third",
               () => "Finish",
-              () => "Next",
+              () => "Next"
             )}
           </Button>
         </div>
