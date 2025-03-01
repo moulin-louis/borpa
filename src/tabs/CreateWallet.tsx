@@ -3,13 +3,7 @@ import { defineStepper } from "@stepperize/react";
 import { useState } from "react";
 
 import { Button } from "~/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "~/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 
 const { useStepper, Scoped } = defineStepper(
   {
@@ -34,14 +28,7 @@ const { useStepper, Scoped } = defineStepper(
   },
 );
 
-function CardStep({
-  title,
-  description,
-}: {
-  title: string;
-  description: string;
-  children: ReactNode;
-}) {
+function CardStep({ title, description }: { title: string; description: string; children: ReactNode }) {
   return (
     <Card>
       <CardHeader>
@@ -62,35 +49,19 @@ export function CreateWallet() {
     <Scoped>
       <div className="flex flex-col w-full max-w-md mx-auto">
         {stepper.when("first", (step) => (
-          <CardStep
-            title={step.title}
-            description={step.description}
-            children={<></>}
-          />
+          <CardStep title={step.title} description={step.description} children={<></>} />
         ))}
 
         {stepper.when("second", (step) => (
-          <CardStep
-            title={step.title}
-            description={step.description}
-            children={<></>}
-          />
+          <CardStep title={step.title} description={step.description} children={<></>} />
         ))}
 
         {stepper.when("third", (step) => (
-          <CardStep
-            title={step.title}
-            description={step.description}
-            children={<></>}
-          />
+          <CardStep title={step.title} description={step.description} children={<></>} />
         ))}
 
         {stepper.when("last", (step) => (
-          <CardStep
-            title={step.title}
-            description={step.description}
-            children={<></>}
-          />
+          <CardStep title={step.title} description={step.description} children={<></>} />
         ))}
       </div>
       {!stepper.isLast ? (
