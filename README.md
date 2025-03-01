@@ -1,6 +1,7 @@
 # plasmo-tailwindcss-shadcn-template
 
 A chrome extension template using
+
 - [Plasmo](https://docs.plasmo.com/)
 - [Tailwind CSS](https://tailwindcss.com/)
 - [Shadcn/ui](https://ui.shadcn.com/)
