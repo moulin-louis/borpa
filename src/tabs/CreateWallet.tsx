@@ -1,7 +1,7 @@
 import { defineStepper } from "@stepperize/react";
 import { CheckIcon, ClipboardCopyIcon, } from "lucide-react";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import * as zxcvbn from "zxcvbn";
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
@@ -73,13 +73,13 @@ function VerifySeedPhrase() {
       .refine((val) => val === seedPhrase[2], "Not the right word"),
     word7: z.string().max(8)
       .refine((val) => wordlist.includes(val), "Not a valid BIP39 word")
-      .refine((val) => val === seedPhrase[2], "Not the right word"),
+      .refine((val) => val === seedPhrase[6], "Not the right word"),
     word9: z.string().max(8)
       .refine((val) => wordlist.includes(val), "Not a valid BIP39 word")
-      .refine((val) => val === seedPhrase[2], "Not the right word"),
+      .refine((val) => val === seedPhrase[8], "Not the right word"),
     word12: z.string().max(8)
       .refine((val) => wordlist.includes(val), "Not a valid BIP39 word")
-      .refine((val) => val === seedPhrase[2], "Not the right word"),
+      .refine((val) => val === seedPhrase[11], "Not the right word"),
   })
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -89,13 +89,29 @@ function VerifySeedPhrase() {
       word9: "",
       word12: "",
     },
+    mode: "onChange"
   })
+  const word3 = form.watch("word3");
+  const word7 = form.watch("word7");
+  const word9 = form.watch("word9");
+  const word12 = form.watch("word12");
 
+  // Check if all fields are valid
+  useEffect(() => {
+    // Check if all words are correct
+    const allCorrect =
+      word3 === seedPhrase[2] &&
+      word7 === seedPhrase[6] &&
+      word9 === seedPhrase[8] &&
+      word12 === seedPhrase[11];
 
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
-    console.log('form value = ', values)
-    stepper.setMetadata("second", { valid: true })
-  }
+    console.log('all correct = ', allCorrect)
+    console.log('stepper = ', stepper);
+    if (allCorrect === true) {
+      console.log('calling stepper next')
+      stepper.next();
+    }
+  }, [word3, word7, word9, word12, stepper]);
 
   return (
     <div className="space-y-4">
@@ -103,44 +119,42 @@ function VerifySeedPhrase() {
         Enter parts of your seed phrase to verify you&apos;ve saved it correctly.
       </p>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-          <FormField control={form.control} name="word3" render={({ field }) => (
-            <FormItem>
-              <FormLabel>Word 3</FormLabel>
-              <FormControl>
-                <Input placeholder="Enter word #3" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )} />
-          <FormField control={form.control} name="word7" render={({ field }) => (
-            <FormItem>
-              <FormLabel>Word 7</FormLabel>
-              <FormControl>
-                <Input placeholder="Enter word #7" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )} />
-          <FormField control={form.control} name="word9" render={({ field }) => (
-            <FormItem>
-              <FormLabel>Word 9</FormLabel>
-              <FormControl>
-                <Input placeholder="Enter word #9" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )} />
-          <FormField control={form.control} name="word12" render={({ field }) => (
-            <FormItem>
-              <FormLabel>Word 12</FormLabel>
-              <FormControl>
-                <Input placeholder="Enter word #12" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )} />
-        </form>
+        <FormField control={form.control} name="word3" render={({ field }) => (
+          <FormItem>
+            <FormLabel>Word 3</FormLabel>
+            <FormControl>
+              <Input placeholder="Enter word #3" {...field} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )} />
+        <FormField control={form.control} name="word7" render={({ field }) => (
+          <FormItem>
+            <FormLabel>Word 7</FormLabel>
+            <FormControl>
+              <Input placeholder="Enter word #7" {...field} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )} />
+        <FormField control={form.control} name="word9" render={({ field }) => (
+          <FormItem>
+            <FormLabel>Word 9</FormLabel>
+            <FormControl>
+              <Input placeholder="Enter word #9" {...field} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )} />
+        <FormField control={form.control} name="word12" render={({ field }) => (
+          <FormItem>
+            <FormLabel>Word 12</FormLabel>
+            <FormControl>
+              <Input placeholder="Enter word #12" {...field} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )} />
       </Form>
     </div>
   );
@@ -240,13 +254,7 @@ const { useStepper, Scoped } = defineStepper(
 );
 
 export function CreateWallet() {
-  const stepper = useStepper({
-    initialMetadata: {
-      second: {
-        valid: false
-      }
-    }
-  });
+  const stepper = useStepper();
 
   const progress = (() => {
     if (stepper.current.id === "first") return 25;
@@ -274,16 +282,7 @@ export function CreateWallet() {
           </Button>
 
           {!stepper.isLast ? (
-            <Button onClick={() => {
-              stepper.beforeNext(() => {
-                console.log('in before next')
-                if (stepper.current.id !== 'second')
-                  return true;
-                const metadata = stepper.getMetadata('second');
-                console.log('valid = ', metadata.valid)
-                return metadata.valid;
-              })
-            }}>
+            <Button onClick={stepper.next} disabled={stepper.current.id === 'second'}>
               {stepper.current.id === "third" ? "Finish" : "Next"}
             </Button>
           ) : (
