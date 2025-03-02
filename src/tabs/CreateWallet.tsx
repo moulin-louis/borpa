@@ -15,9 +15,17 @@ import { Progress } from "~/components/ui/progress";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "~/components/ui/tooltip";
 import { z } from "zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "~components/ui/form";
+import { create } from "zustand";
 
 const seedPhraseString = generateMnemonic(wordlist);
 const seedPhrase = seedPhraseString.split(' ');
+
+const useFormStore = create<{ valid: boolean, setValid: (val: boolean) => void }>((set) => {
+  return {
+    valid: false,
+    setValid: (val) => set({ valid: val }),
+  }
+})
 
 function GenerateSeedPhrase() {
   const [copied, setCopied] = useState(false);
@@ -66,12 +74,8 @@ function GenerateSeedPhrase() {
 }
 
 function VerifySeedPhrase() {
-  const stepper = useStepper();
+  const { setValid } = useFormStore()
 
-  useEffect(() => {
-    console.log('component mounter');
-    return () => console.log('component unmounted')
-  })
   const formSchema = z.object({
     word3: z.string().max(8)
       .refine((val) => wordlist.includes(val), "Not a valid BIP39 word")
@@ -96,10 +100,7 @@ function VerifySeedPhrase() {
     },
     mode: "onChange"
   })
-  const word3 = form.watch("word3");
-  const word7 = form.watch("word7");
-  const word9 = form.watch("word9");
-  const word12 = form.watch("word12");
+  const { word3, word7, word9, word12 } = form.watch()
 
   useEffect(() => {
     const allCorrect =
@@ -107,14 +108,8 @@ function VerifySeedPhrase() {
       word7 === seedPhrase[6] &&
       word9 === seedPhrase[8] &&
       word12 === seedPhrase[11];
-
-    console.log('all correct = ', allCorrect)
-    console.log('stepper = ', stepper);
-    if (allCorrect === true) {
-      console.log('calling stepper next')
-      stepper.next();
-    }
-  }, [word3, word7, word9, word12, stepper]);
+    setValid(allCorrect)
+  }, [word3, word7, word9, word12]);
 
   return (
     <div className="space-y-4">
@@ -258,6 +253,7 @@ const { useStepper, Scoped } = defineStepper(
 
 export function CreateWallet() {
   const stepper = useStepper();
+  const { valid } = useFormStore()
 
   const progress = (() => {
     if (stepper.current.id === "first") return 25;
@@ -285,7 +281,7 @@ export function CreateWallet() {
           </Button>
 
           {!stepper.isLast ? (
-            <Button onClick={stepper.next} disabled={stepper.current.id === 'second'}>
+            <Button onClick={stepper.next} disabled={stepper.current.id === 'second' && !valid}>
               {stepper.current.id === "third" ? "Finish" : "Next"}
             </Button>
           ) : (
