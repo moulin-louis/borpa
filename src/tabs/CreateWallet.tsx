@@ -1,47 +1,60 @@
 import { defineStepper } from "@stepperize/react";
-import { CheckIcon, ClipboardCopyIcon } from "lucide-react";
+import { CheckIcon, ClipboardCopyIcon, } from "lucide-react";
 
 import { useState } from "react";
 import * as zxcvbn from "zxcvbn";
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
+import { generateMnemonic } from '@scure/bip39';
+
+import { wordlist } from '@scure/bip39/wordlists/english';
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { Progress } from "~/components/ui/progress";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "~/components/ui/tooltip";
+import { z } from "zod";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "~components/ui/form";
+
+const seedPhraseString = generateMnemonic(wordlist);
+const seedPhrase = seedPhraseString.split(' ');
 
 function GenerateSeedPhrase() {
-  const [seedPhrase, setSeedPhrase] = useState<string>("");
   const [copied, setCopied] = useState(false);
 
   const handleCopy = () => {
     if (seedPhrase) {
-      navigator.clipboard.writeText(seedPhrase);
+      navigator.clipboard.writeText(seedPhraseString);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }
   };
 
-  const generateSeedPhrase = () => {
-    const mockSeedPhrase = "abandon ability able about above absent absorb abstract absurd abuse access accident";
-    setSeedPhrase(mockSeedPhrase);
-  };
-
   return (
     <div className="space-y-4">
       <div className="p-4 bg-muted rounded-md">
-        <p className="text-sm font-mono break-all">{seedPhrase || "Your seed phrase will appear here"}</p>
+        <p className="text-sm font-mono break-all">
+          {seedPhraseString || "Your seed phrase will appear here"}
+        </p>
       </div>
 
       <div className="flex gap-2">
-        <Button onClick={generateSeedPhrase}>Generate Seed Phrase</Button>
         <TooltipProvider>
           <Tooltip open={copied}>
             <TooltipContent>
               <p>Copied!</p>
             </TooltipContent>
             <TooltipTrigger asChild>
-              <Button variant="outline" onClick={handleCopy} disabled={!seedPhrase} className="gap-2">
-                {copied ? <CheckIcon className="h-4 w-4" /> : <ClipboardCopyIcon className="h-4 w-4" />}
+              <Button
+                variant="outline"
+                onClick={handleCopy}
+                className="gap-2"
+              >
+                {copied ? (
+                  <CheckIcon className="h-4 w-4" />
+                ) : (
+                  <ClipboardCopyIcon className="h-4 w-4" />
+                )}
                 Copy
               </Button>
             </TooltipTrigger>
@@ -53,41 +66,74 @@ function GenerateSeedPhrase() {
 }
 
 function VerifySeedPhrase() {
-  const [verificationWords, setVerificationWords] = useState({
-    word3: "",
-    word7: "",
-    word9: "",
-    word12: "",
-  });
+  const formSchema = z.object({
+    word3: z.string().max(8)
+      .refine((val) => wordlist.includes(val), "Not a valid BIP39 word")
+      .refine((val) => val === seedPhrase[2], "Not the right word"),
+    word7: z.string().max(8).refine((val) => { wordlist.includes(val) }),
+    word9: z.string().max(8).refine((val) => { wordlist.includes(val) }),
+    word12: z.string().max(8).refine((val) => { wordlist.includes(val) }),
+  })
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      word3: "",
+      word7: "",
+      word9: "",
+      word12: "",
+    },
+  })
 
-  const handleInputChange = (wordKey: keyof typeof verificationWords) => (e: React.ChangeEvent<HTMLInputElement>) => {
-    setVerificationWords((prev) => ({
-      ...prev,
-      [wordKey]: e.target.value,
-    }));
-  };
+
+  const onSubmit = (values: z.infer<typeof formSchema>) => {
+    console.log('form value = ', values)
+  }
 
   return (
     <div className="space-y-4">
-      <p className="text-sm">Enter parts of your seed phrase to verify you&apos;ve saved it correctly.</p>
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Word #3</label>
-          <Input placeholder="Enter word #3" value={verificationWords.word3} onChange={handleInputChange("word3")} />
-        </div>
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Word #7</label>
-          <Input placeholder="Enter word #7" value={verificationWords.word7} onChange={handleInputChange("word7")} />
-        </div>
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Word #9</label>
-          <Input placeholder="Enter word #9" value={verificationWords.word9} onChange={handleInputChange("word9")} />
-        </div>
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Word #12</label>
-          <Input placeholder="Enter word #12" value={verificationWords.word12} onChange={handleInputChange("word12")} />
-        </div>
-      </div>
+      <p className="text-sm">
+        Enter parts of your seed phrase to verify you&apos;ve saved it correctly.
+      </p>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+          <FormField control={form.control} name="word3" render={({ field }) => (
+            <FormItem>
+              <FormLabel>Word 3</FormLabel>
+              <FormControl>
+                <Input placeholder="Enter word #3" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )} />
+          <FormField control={form.control} name="word7" render={({ field }) => (
+            <FormItem>
+              <FormLabel>Word 7</FormLabel>
+              <FormControl>
+                <Input placeholder="Enter word #7" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )} />
+          <FormField control={form.control} name="word9" render={({ field }) => (
+            <FormItem>
+              <FormLabel>Word 9</FormLabel>
+              <FormControl>
+                <Input placeholder="Enter word #9" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )} />
+          <FormField control={form.control} name="word12" render={({ field }) => (
+            <FormItem>
+              <FormLabel>Word 12</FormLabel>
+              <FormControl>
+                <Input placeholder="Enter word #12" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )} />
+        </form>
+      </Form>
     </div>
   );
 }
@@ -107,7 +153,12 @@ function SetPassword() {
     <div className="space-y-4">
       <div className="space-y-2">
         <label className="text-sm font-medium">Password</label>
-        <Input type="password" placeholder="Enter password" value={password} onChange={handlePasswordChange} />
+        <Input
+          type="password"
+          placeholder="Enter password"
+          value={password}
+          onChange={handlePasswordChange}
+        />
         {password && (
           <div className="space-y-1">
             <div className="text-xs">Password strength</div>
@@ -129,8 +180,8 @@ function SetPassword() {
       </div>
       <div className="rounded-md bg-muted p-3">
         <p className="text-xs text-muted-foreground">
-          Password must be at least 8 characters long and include a mixture of upper and lowercase letters, numbers, and
-          symbols.
+          Password must be at least 8 characters long and include a mixture of upper and lowercase
+          letters, numbers, and symbols.
         </p>
       </div>
     </div>
@@ -146,7 +197,9 @@ function WalletReady() {
         </div>
       </div>
       <h3 className="font-medium text-lg">Your wallet is ready!</h3>
-      <p className="text-sm text-muted-foreground">You can now send, receive, and manage your crypto.</p>
+      <p className="text-sm text-muted-foreground">
+        You can now send, receive, and manage your crypto.
+      </p>
     </div>
   );
 }
@@ -182,12 +235,9 @@ export function CreateWallet() {
   const stepper = useStepper();
 
   const progress = (() => {
-    if (stepper.current.id === "first")
-      return 25;
-    if (stepper.current.id === "second")
-      return 50;
-    if (stepper.current.id === "third")
-      return 75;
+    if (stepper.current.id === "first") return 25;
+    if (stepper.current.id === "second") return 50;
+    if (stepper.current.id === "third") return 75;
     return 100;
   })();
 
@@ -210,7 +260,9 @@ export function CreateWallet() {
           </Button>
 
           {!stepper.isLast ? (
-            <Button onClick={stepper.next}>{stepper.current.id === "third" ? "Finish" : "Next"}</Button>
+            <Button onClick={stepper.next}>
+              {stepper.current.id === "third" ? "Finish" : "Next"}
+            </Button>
           ) : (
             <Button onClick={window.close}>Done</Button>
           )}

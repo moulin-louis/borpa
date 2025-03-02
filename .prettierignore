@@ -1,7 +1,6 @@
-# Ignore artifacts:
+.plasmo
+.plasmo/**
 build
 coverage
 node_modules
-.plasmo
-.plasmo/
 assets
