@@ -1,30 +1,23 @@
 import { defineStepper } from "@stepperize/react";
-import { CheckIcon, ClipboardCopyIcon } from "lucide-react";
+import { CheckIcon, ClipboardCopyIcon, } from "lucide-react";
 
 import { useState } from "react";
 import * as zxcvbn from "zxcvbn";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { generateMnemonic } from "@scure/bip39";
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
+import { generateMnemonic } from '@scure/bip39';
 
-import { wordlist } from "@scure/bip39/wordlists/english";
+import { wordlist } from '@scure/bip39/wordlists/english';
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { Progress } from "~/components/ui/progress";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "~/components/ui/tooltip";
 import { z } from "zod";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "~components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "~components/ui/form";
 
 const seedPhraseString = generateMnemonic(wordlist);
-const seedPhrase = seedPhraseString.split(" ");
+const seedPhrase = seedPhraseString.split(' ');
 
 function GenerateSeedPhrase() {
   const [copied, setCopied] = useState(false);
@@ -52,7 +45,11 @@ function GenerateSeedPhrase() {
               <p>Copied!</p>
             </TooltipContent>
             <TooltipTrigger asChild>
-              <Button variant="outline" onClick={handleCopy} className="gap-2">
+              <Button
+                variant="outline"
+                onClick={handleCopy}
+                className="gap-2"
+              >
                 {copied ? (
                   <CheckIcon className="h-4 w-4" />
                 ) : (
@@ -69,31 +66,21 @@ function GenerateSeedPhrase() {
 }
 
 function VerifySeedPhrase() {
+  const stepper = useStepper();
   const formSchema = z.object({
-    word3: z
-      .string()
-      .max(8)
+    word3: z.string().max(8)
       .refine((val) => wordlist.includes(val), "Not a valid BIP39 word")
       .refine((val) => val === seedPhrase[2], "Not the right word"),
-    word7: z
-      .string()
-      .max(8)
-      .refine((val) => {
-        wordlist.includes(val);
-      }),
-    word9: z
-      .string()
-      .max(8)
-      .refine((val) => {
-        wordlist.includes(val);
-      }),
-    word12: z
-      .string()
-      .max(8)
-      .refine((val) => {
-        wordlist.includes(val);
-      }),
-  });
+    word7: z.string().max(8)
+      .refine((val) => wordlist.includes(val), "Not a valid BIP39 word")
+      .refine((val) => val === seedPhrase[2], "Not the right word"),
+    word9: z.string().max(8)
+      .refine((val) => wordlist.includes(val), "Not a valid BIP39 word")
+      .refine((val) => val === seedPhrase[2], "Not the right word"),
+    word12: z.string().max(8)
+      .refine((val) => wordlist.includes(val), "Not a valid BIP39 word")
+      .refine((val) => val === seedPhrase[2], "Not the right word"),
+  })
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -102,11 +89,13 @@ function VerifySeedPhrase() {
       word9: "",
       word12: "",
     },
-  });
+  })
+
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
-    console.log("form value = ", values);
-  };
+    console.log('form value = ', values)
+    stepper.setMetadata("second", { valid: true })
+  }
 
   return (
     <div className="space-y-4">
@@ -115,58 +104,42 @@ function VerifySeedPhrase() {
       </p>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-          <FormField
-            control={form.control}
-            name="word3"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Word 3</FormLabel>
-                <FormControl>
-                  <Input placeholder="Enter word #3" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="word7"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Word 7</FormLabel>
-                <FormControl>
-                  <Input placeholder="Enter word #7" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="word9"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Word 9</FormLabel>
-                <FormControl>
-                  <Input placeholder="Enter word #9" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="word12"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Word 12</FormLabel>
-                <FormControl>
-                  <Input placeholder="Enter word #12" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <FormField control={form.control} name="word3" render={({ field }) => (
+            <FormItem>
+              <FormLabel>Word 3</FormLabel>
+              <FormControl>
+                <Input placeholder="Enter word #3" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )} />
+          <FormField control={form.control} name="word7" render={({ field }) => (
+            <FormItem>
+              <FormLabel>Word 7</FormLabel>
+              <FormControl>
+                <Input placeholder="Enter word #7" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )} />
+          <FormField control={form.control} name="word9" render={({ field }) => (
+            <FormItem>
+              <FormLabel>Word 9</FormLabel>
+              <FormControl>
+                <Input placeholder="Enter word #9" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )} />
+          <FormField control={form.control} name="word12" render={({ field }) => (
+            <FormItem>
+              <FormLabel>Word 12</FormLabel>
+              <FormControl>
+                <Input placeholder="Enter word #12" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )} />
         </form>
       </Form>
     </div>
@@ -267,7 +240,13 @@ const { useStepper, Scoped } = defineStepper(
 );
 
 export function CreateWallet() {
-  const stepper = useStepper();
+  const stepper = useStepper({
+    initialMetadata: {
+      second: {
+        valid: false
+      }
+    }
+  });
 
   const progress = (() => {
     if (stepper.current.id === "first") return 25;
@@ -295,7 +274,16 @@ export function CreateWallet() {
           </Button>
 
           {!stepper.isLast ? (
-            <Button onClick={stepper.next}>
+            <Button onClick={() => {
+              stepper.beforeNext(() => {
+                console.log('in before next')
+                if (stepper.current.id !== 'second')
+                  return true;
+                const metadata = stepper.getMetadata('second');
+                console.log('valid = ', metadata.valid)
+                return metadata.valid;
+              })
+            }}>
               {stepper.current.id === "third" ? "Finish" : "Next"}
             </Button>
           ) : (
