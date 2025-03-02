@@ -67,6 +67,11 @@ function GenerateSeedPhrase() {
 
 function VerifySeedPhrase() {
   const stepper = useStepper();
+
+  useEffect(() => {
+    console.log('component mounter');
+    return () => console.log('component unmounted')
+  })
   const formSchema = z.object({
     word3: z.string().max(8)
       .refine((val) => wordlist.includes(val), "Not a valid BIP39 word")
@@ -96,9 +101,7 @@ function VerifySeedPhrase() {
   const word9 = form.watch("word9");
   const word12 = form.watch("word12");
 
-  // Check if all fields are valid
   useEffect(() => {
-    // Check if all words are correct
     const allCorrect =
       word3 === seedPhrase[2] &&
       word7 === seedPhrase[6] &&
